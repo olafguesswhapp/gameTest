@@ -1,23 +1,56 @@
-var React = require('react');
+import React from 'react';
+import getQPointsUserInfo from '../utils/helpers';
 
-var CreateGame = React.createClass({
+class CreateGame extends React.Component{
 
-	render: function() {
-		return (
-			<div className="row">
+  constructor(){
+    super();
+    this.state = {
+      responseData: {}
+    }
+  }
+
+  componentWillMount(){
+    this.init('kim.sora@web.de', '123')
+  }
+
+  init(username, password){
+    getQPointsUserInfo(username, password).then(function(response){
+      this.setState({
+        responseData: response.data 
+      });
+    }.bind(this));
+  }
+
+  render(){
+    var responseData = this.state.responseData;
+    console.log('render');
+    console.log(responseData.programData);
+    var programContent = '';
+    if (responseData.programData){
+      programContent = responseData.programData.map((data, index) => {
+        console.log(data.programName);
+        return (
+          <div className="col-md-4" key={index}>
+            <p>{data.programName}</p>
+            <p>{data.programCompany}</p>
+          </div>
+        );
+      });
+    }
+    return (
+      <div className="row">
         <div className="col-md-4">
-          <p>erste Spalte</p>
+          <p>{responseData.message}</p>
         </div>
-        <div className="col-md-4">
-          <p>zweite Spalte</p>
-        </div>
-        <div className="col-md-4">
-          <p>dritte Spalte</p>
-        </div>
+        {programContent}
+
       </div>
-		);
-	}
+    )
+  }
+}
 
-});
+export default CreateGame
 
-module.exports = CreateGame;
+/* this.init('kim.sora@web.de', '123') */
+/* this.init('olaf@guesswhapp.de', '12345') */

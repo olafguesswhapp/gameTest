@@ -6,7 +6,7 @@ import { Route, IndexRoute } from 'react-router';
 
 module.exports = (
   <Route path="/" component={Main}>
-  	  <Route path="game/new" component={CreateGame} />
+  	<Route path="game/new" component={CreateGame} />
     <IndexRoute component={Home} />
   </Route>
 );
