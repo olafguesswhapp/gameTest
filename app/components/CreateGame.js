@@ -6,7 +6,7 @@ class CreateGame extends React.Component{
   constructor(){
     super();
     this.state = {
-      responseData: {}
+      users: []
     }
   }
 
@@ -17,34 +17,59 @@ class CreateGame extends React.Component{
   init(username, password){
     getQPointsUserInfo(username, password).then(function(response){
       this.setState({
-        responseData: response.data 
+        users: response.data.users.map(function(user){
+          var obj = {
+            userEmail: user.userEmail,
+            firstName: user.firstName,
+            status: false
+          };
+          return obj;
+        })
       });
     }.bind(this));
   }
 
+  handleClick(index, e){
+    console.log(this.state.users[index].userEmail);
+    var newUsers = this.state.users;
+    newUsers[index].status = newUsers[index].status===false ?  true : false;
+    this.setState( { users: newUsers } );
+  }
+
   render(){
-    var responseData = this.state.responseData;
+    var users = this.state.users;
     console.log('render');
-    console.log(responseData.programData);
-    var programContent = '';
-    if (responseData.programData){
-      programContent = responseData.programData.map((data, index) => {
-        console.log(data.programName);
+    console.log(users);
+    var programContent = (
+      <tr key={0} >
+        <td>Loading</td>
+        <td></td>
+      </tr>
+    );
+    if (users){
+      programContent = users.map((user, index) => {
         return (
-          <div className="col-md-4" key={index}>
-            <p>{data.programName}</p>
-            <p>{data.programCompany}</p>
-          </div>
+          <tr onClick={this.handleClick.bind(this, index)} key={index} className={user.status===true ? 'success' : ''} >
+            <td>{user.userEmail}</td>
+            <td>{user.firstName}</td>
+          </tr>
         );
       });
     }
     return (
-      <div className="row">
-        <div className="col-md-4">
-          <p>{responseData.message}</p>
-        </div>
-        {programContent}
-
+      <div className="panel panel-default">
+        <div className='panel-heading'>Wähle Spielteilnehmer aus:</div>
+        <table className='table table-striped'>
+          <thead>
+            <tr>
+              <th>Spieler</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {programContent}
+          </tbody>
+        </table>
       </div>
     )
   }

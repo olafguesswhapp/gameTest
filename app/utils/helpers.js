@@ -3,12 +3,9 @@ import axios from 'axios';
 function getUserData(username, password) {
 	console.log(`username is ${username}`);
 	return axios({
-		url: 'http://localhost:3000/apicheckuser',
+		url: 'http://localhost:3000/api/users',
 		method: 'post',
-		data: {
-			userEmail: username,
-			password: password
-		},
+		
 	})
 }
 
