@@ -1,12 +1,14 @@
 import React from 'react';
-import getQPointsUserInfo from '../utils/helpers';
+import getUserList from '../utils/UserList';
+import getGameList from '../utils/GameList';
 
 class CreateGame extends React.Component{
 
   constructor(){
     super();
     this.state = {
-      users: []
+      users: [],
+      games: []
     }
   }
 
@@ -15,12 +17,26 @@ class CreateGame extends React.Component{
   }
 
   init(username, password){
-    getQPointsUserInfo(username, password).then(function(response){
+    getUserList(username, password).then(function(response){
       this.setState({
         users: response.data.users.map(function(user){
           var obj = {
             userEmail: user.userEmail,
             firstName: user.firstName,
+            status: false
+          };
+          return obj;
+        })
+      });
+    }.bind(this));
+
+    getGameList().then(function(response){
+      this.setState({
+        games: response.data.games.map(function(game){
+          var obj = {
+            gameTitle: game.gameTitle,
+            minPlayers: game.minPlayers,
+            maxPlayers: game.maxPlayers,
             status: false
           };
           return obj;
