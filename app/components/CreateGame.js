@@ -8,7 +8,10 @@ class CreateGame extends React.Component{
     super();
     this.state = {
       users: [],
-      games: []
+      games: [],
+      minPlayers: 0,
+      maxPlayers: 0,
+      countPlayers: 1
     }
   }
 
@@ -18,15 +21,21 @@ class CreateGame extends React.Component{
 
   init(username, password){
     getUserList(username, password).then(function(response){
+      var obj = [{
+        userEmail: 'host@game',
+        firstName: 'Yourself',
+        status: true
+      }];
+      obj = response.data.users.reduce(function(coll, user){
+        coll.push({
+          userEmail: user.userEmail,
+          firstName: user.firstName,
+          status: false
+        });
+        return coll;
+      }, obj);
       this.setState({
-        users: response.data.users.map(function(user){
-          var obj = {
-            userEmail: user.userEmail,
-            firstName: user.firstName,
-            status: false
-          };
-          return obj;
-        })
+        users: obj
       });
     }.bind(this));
 
@@ -48,15 +57,41 @@ class CreateGame extends React.Component{
   handleGameClick(index, e){
     console.log(this.state.games[index].gameTitle);
     var newGames = this.state.games;
+    newGames.forEach(function(game){
+      if(game.status===true){game.status = false}
+    });
     newGames[index].status = newGames[index].status===false ?  true : false;
-    this.setState( { games: newGames } );
+    this.setState({
+      games: newGames,
+      minPlayers: newGames[index].minPlayers,
+      maxPlayers: newGames[index].maxPlayers,
+    });
   }
 
   handleUserClick(index, e){
     console.log(this.state.users[index].userEmail);
     var newUsers = this.state.users;
-    newUsers[index].status = newUsers[index].status===false ?  true : false;
-    this.setState( { users: newUsers } );
+    var counter = 0;
+    if (newUsers[index].status===false) {
+      newUsers[index].status = true;
+      counter = 1;
+    } else {
+      newUsers[index].status = false;
+      counter = -1;
+    }
+    console.log('change by ', counter);
+    console.log(this.state.countPlayers);
+    // newUsers[index].status = newUsers[index].status===false ?  true : false;
+    this.setState({
+      users: newUsers,
+      countPlayers : this.state.countPlayers + counter
+      });
+    console.log(this.state.countPlayers);
+  }
+
+  minAndMaxPlayer(min, max){
+    return min === max ?
+      min : (min + ' bis ' + max);
   }
 
   displayGameList(){
@@ -68,7 +103,7 @@ class CreateGame extends React.Component{
           return (
             <tr onClick={this.handleGameClick.bind(this, index)} key={index} className={game.status===true ? 'success' : ''} >
               <td>{game.gameTitle}</td>
-              <td>{game.minPlayers} / {game.maxPlayers} </td>
+              <td>{this.minAndMaxPlayer(game.minPlayers, game.maxPlayers)} </td>
             </tr>
           );
         })
@@ -90,7 +125,7 @@ class CreateGame extends React.Component{
       return(
         users.map((user, index) => {
           return (
-            <tr onClick={this.handleUserClick.bind(this, index)} key={index} className={user.status===true ? 'success' : ''} >
+            <tr onClick={this.handleUserClick.bind(this, index)} key={index} className={user.status===true ? 'info' : ''} >
               <td>{user.userEmail}</td>
               <td>{user.firstName}</td>
             </tr>
@@ -112,6 +147,11 @@ class CreateGame extends React.Component{
     console.log('render');
     var userList = this.displayUserList();
     var gameList = this.displayGameList();
+    var reqPlayers = (this.state.countPlayers <= this.state.minPlayers) ?
+      this.state.minPlayers :
+      (this.state.countPlayers > this.state.minPlayers && this.state.countPlayers < this.state.maxPlayers) ?
+      this.state.countPlayers : this.state.maxPlayers;
+
     return (
       <div className='row'>
         <div className='col-md-6'>
@@ -122,7 +162,7 @@ class CreateGame extends React.Component{
                 <thead>
                   <tr>
                     <th>Spiel</th>
-                    <th>Anzahl</th>
+                    <th>Anzahl Spieler</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,12 +177,12 @@ class CreateGame extends React.Component{
 
         <div className="col-md-6">
           <div className="panel panel-default">
-            <div className='panel-heading'>Wähle Spielteilnehmer aus:</div>
+            <div className='panel-heading'>Wähle zusätzliche Spieler aus: ({this.state.countPlayers} von {reqPlayers})</div>
             <div className='panel-body'>
               <table className='table table-striped' key={0}>
                 <thead>
                   <tr>
-                    <th>Spieler</th>
+                    <th>Spieler-Email</th>
                     <th>Name</th>
                   </tr>
                 </thead>
